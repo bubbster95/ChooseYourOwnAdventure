@@ -1,5 +1,5 @@
-let gameArea, title, setting, dangerMeter, lifeMeter, percent;
-let pointsToWin = 10, roomNum = 0, lives = 3, dangerLevel = 0, dodgeSkill = 2, wit = 2;
+let gameArea, title, hud, setting, dangerMeter, lifeMeter;
+let pointsToWin = 10, roomNum = 0, roomType, lives = 3, dangerLevel = 0, dodgeSkill = 2, wit = 2;
 let story = [];
 
 diceRoll = (length) => {
@@ -7,21 +7,33 @@ diceRoll = (length) => {
 }
 
 const storyElem = {
+    "room": 
+        {"cavern":
+            ["cave", "cavern", "den", "dugout", "fissure", "subterrane", "burrow", "chamber", "grotto"],
+        "room":
+            ["room", "chamber", "compartment", "torture chamber", "bocardo", "precinct", "space"],
+        "clearing":
+            ["clearing", "enclosure", "glade", "opening", "meadow", "dell", "hollow", "small valley"],
+        },
     "elements" : 
         {"monster":
             ["Mummy", "Goblin", "Rock Golumn", "Meatball Man", "Polar Bear", "Zombie", "Ghost", "Drool Monkey", "Spaghetti Monster", "Can of Tuna With Eyes", "Crocodile Woman", "Massive Spider"],
         "human":
             ["Girl Scout", "Folk singer", "Hippie", "Quarterback", "Preist", "Knight", "Rock Singer", "Pro Bowler", "Ninja"],
+        "roomPosition":
+            [" Across from you is a ", " Lurking in the corner you see this ", " Meandering aimlessly in front of you is a ", " In the darkness you see a ", " You can just make out the figure of a ", " Shockingly there is a ", " What's this!? There is a ", " This can't be! And yet, you see a ", " Without warning you spot a ", " You are flabbergasted to see a "],
+        "roomEnter":
+            ["You prance into the ", "You creep into the ", "Trepidatiously you sneak into the  ", "Quietly you walk into the ", "Ever so slightly you edge into the ", "Continuing on you advance to the next ", "In aw you make your way into this ", "You stumble your way into some ", "Running full tilt you burst into a ", "Excitedly you advance into a "],
         "roomStart":
             ["cold ", "dark ", "smelly ", "quiet ", "creepy ", "dank ", "horrible ", "massive ", "bloody ", "bright "],
         "roomSecond":
-            ["the ground is sticky.", "the ceiling is made out of spaghetti!?", "the air feels thick and gross.", "the floor is covered in marbles.", "the door slams behind you!", " the sound of a howler monkey echoes through you."],
+            ["the ground is sticky.", "the ceiling is made out of spaghetti!?", "the air feels thick and gross.", "the floor is covered in marbles.", "the way back becomes obstructed!", " the sound of a howler monkey echoes through you."],
         "activity":
             [" sharpening an ax with a smile.", " baking cookies unhappily.", " throwing icecream around like an animal.", " lacing up a brand new pair of kinky boots.", " juggling chainsaws that are on fire.", " jumping through rings at increasingly higher distances.", " eating a large bowl of insects.", " chopping through a lamb shank with a ninja sword."],
         "dodge":
             ["Oh yeah! Easy money! You dodged like it was nothing!", "The odds were ever in your favor! Look At you dodge master!", "You dodged! Narrowly avoiding death!", "You doged so hard you broke the sound barrier and made your escape.", "Your reflexes are too fast! Nothing can touch you!", "If you can dodge a wrench you can sure as hell dodge this guy!"],
         "wit":
-            ["You comment on how deliecious these cookies are through gritted teeth. They are terrible and it's obvious you lied.", "You wave bak to the neighbor and make a comment about the weather before moving on.", "You make finger guns and explain how you\'re just passing through.", "You crack the funniest joke anybody has ever heard and laugh your way out of trouble.", "You crack the funniest joke anybody has ever heard and laugh your way out of trouble.", "There's nothing you can say here, you start singing 'hello ma baby! hello ma honey! hellow my rag time gaaaaaallll'."],
+            ["You comment on how deliecious these cookies are through gritted teeth. They are terrible and it's obvious you lied.", "You wave back to the neighbor and make a comment about the weather before moving on.", "You make finger guns and explain how you\'re just passing through.", "You crack the funniest joke anybody has ever heard and laugh your way out of trouble.", "You crack the funniest joke anybody has ever heard and laugh your way out of trouble.", "There's nothing you can say here, you start singing 'hello ma baby! hello ma honey! hellow my rag time gaaaaaallll'."],
         "options": 
             ["Move to the next area", "Use quick wit, actually, let me think about it", "Dodge! Dodge! Just Dodge!", "Succomb to a slow and horrible death",]
         },
@@ -41,43 +53,43 @@ const storyElem = {
     "moved 1":
         [ "In a panic you try to rush ahead but the good neighbor takes offense to this, you were never seen again."],
     "wit 1":
-        ["You offended your host, now you are a ghost"],
+        ["You think you are funny huh? Well you pay with a life!"],
     "dodge 1":
         ["Ohhhh so close! Welp, the odds were not ever in your favor."],
 
     "2":
-        [" doesn't really seem to notice you but you get the feeling they are cool."],
+        [" doesn't really seem to notice you but you get the feeling they are cool.", " glances up at you briefly, then goes back to what they were doing", " mildly acknowledges you approaching slightly.", " sniffs the air in your direction but pays no mind."],
     "moved 2":
         ["By chance you happened to step on a booby trap triggering spikes to impail you."],
     "wit 2":
-        ["You offended your host, now you are a ghost"],
+        ["As cool as they may seem. You've offened your host! They take a life!"],
     "dodge 2":
         ["You dodged! right into a big ol' hole right there."],
 
     "3":
-        [" growls at you before standing up slowly in a sorta angry way."],
+        [" growls at you before standing up slowly in a sorta angry way.", " looks angered by your prescence.", " walks towards you slowly exhuming a bad energy.", " smiles a creepy grin and advances towards you slowly."],
     "moved 3":
         ["You fail to escape the room and are cornered helplessly."],
     "wit 3":
-        ["You offended your host, now you are a ghost"],
+        ["Now you've only made things worse. You feel your health weaken."],
     "dodge 3":
         ["Your reflexes are too slow! So sorry!"],
 
     "4":
-        [" lunges at you quickly with little to no warning while screaming."],
+        [" lunges at you quickly with little to no warning while screaming.", " picks up a brisk pace in your direction with daggers for eyes.", " approaches seemingly enraged by you", " jumps towards you breathing heavily through the nose."],
     "moved 4":
         [ "In a panic you try to rush ahead but the good neighbor takes offense to this, you were never seen again."],
     "wit 4":
-        ["You offended your host, now you are a ghost"],
+        ["With no time to react you stand there and babble like an idiot."],
     "dodge 4":
         ["Oof no dice, you dodged so hard you broke your own ankles."],    
 
     "5":
-        [" upon noticing you launches an attack immediately you barely have time to think!"],
+        [" upon noticing you launches an attack immediately, you barely have time to think!", " instantly attacks with no warning and a whole lot of screaming.", " goes for your throat with everything they've got", " makes a B line for you with the intent to kill."],
     "moved 5":
         ["You are torn to shreds in a flurry of pain if only you had turned back!"],
     "wit 5":
-        ["You offended your host, now you are a ghost"],
+        ["Your life is taken before uttering a single word."],
     "dodge 5":
         ["You dodged left when you should have dodge right. Now you won't be dodging at all."],
     }
@@ -93,21 +105,21 @@ populate = () => {
     // Cave Adventure Button
     let cave = document.createElement('BUTTON');
     cave.className = 'cave';
-    cave.innerHTML = 'Spelunking Adventure';
+    cave.innerHTML = 'Spelunking Adventure (Short)';
     cave.addEventListener('click', caveStart);
     gameArea.appendChild(cave);
 
     // Dungeon Adventure Button
     let dungeon = document.createElement('BUTTON');
     dungeon.className = 'dungeon';
-    dungeon.innerHTML = 'Dungeon Adventure';
+    dungeon.innerHTML = 'Dungeon Adventure (Medium)';
     dungeon.addEventListener('click', dungeonStart)
     gameArea.appendChild(dungeon);
 
     // Jungle Adventure Button
     let jungle = document.createElement('BUTTON');
     jungle.className = 'jungle';
-    jungle.innerHTML = 'Jungle Adventure';
+    jungle.innerHTML = 'Jungle Adventure (Long)';
     jungle.addEventListener('click', jungleStart);
     gameArea.appendChild(jungle);
 }
@@ -129,6 +141,7 @@ caveStart = () => {
 
 dungeonStart = () => {
     removeButtons();
+    pointsToWin = 15;
     setting = 'room';
     title.innerHTML = 'You enter the Dungeon';
     let intro = document.createElement('P');
@@ -144,6 +157,7 @@ dungeonStart = () => {
 
 jungleStart = () => {
     removeButtons();
+    pointsToWin = 20;
     setting = 'clearing';
     title.innerHTML = 'You enter the Jungle';
     let intro = document.createElement('P');
@@ -157,12 +171,16 @@ jungleStart = () => {
     firstChoice();
 }
 
-firstChoice = () => {
+goBackButton = () => {
     // Go back
     let back = document.createElement('BUTTON');
     back.innerHTML = 'Go Back Now';
     back.addEventListener('click', resetGame);
     gameArea.appendChild(back);
+}
+
+firstChoice = () => {
+    goBackButton();
 
     // Go Forward
     let forward = document.createElement('BUTTON');
@@ -175,27 +193,30 @@ resetGame = () => {
     removeText();
     removeButtons();
     story = [];
-    roomNum = 0;
-    percent = null;
-    lives = 0;
+    lives = 3;
     wit = 2;
     dodgeSkill = 2;
+    roomNum = 0;
+    pointsToWin = 10;
     updateMeters();
+    hud.style.display = 'none';
     populate();
 }
 
 goForward = () => {
     removeButtons();
     removeText();
+    hud = document.querySelector('.hud');
+    hud.style.display = 'block';
     newRoom();
 }
 
 updateMeters = () => {
     //Progress 
-    percent = (roomNum-1/pointsToWin)*100;
+    let percent = ((roomNum)/pointsToWin)*100;
     let progressMeter = document.querySelector('.progress-made');
-    progressMeter.style.width = + percent + "%";
-    console.log(progressMeter)
+    progressMeter.style.width = percent + "%";
+
     // Fill health
     let healthMeter = document.querySelector('.lives');
     healthMeter.innerHTML = 'Lives: ' + lives;
@@ -213,32 +234,46 @@ updateMeters = () => {
     witMeter.innerHTML = 'Wittiness: ' + wit;
 }
 
+bodyParagraphA = () => {
+
+    let entity = beingAtRandom();
+
+    // Body Paragraph
+    let text = document.createElement('P');
+    text.innerHTML = 
+    enterAtRandom()
+    + roomStartAtRandom()
+    + roomType
+    + ' and '
+    + roomSecondAtRandom()
+    + positionAtRandom()
+    + entity
+    + activityAtRandom()
+    + ' The '
+    + entity
+    + responseAtRandom();
+    gameArea.appendChild(text);
+}
+
+newSetting = () => {
+    let length = storyElem.room[setting].length
+    roomType = storyElem.room[setting][diceRoll(length)];
+}
+
 newRoom = () => {
+    roomNum++;
     if (roomNum >= pointsToWin) {
         youWin();
         return;
     }
     updateMeters();
-    roomNum++;
-    let entity = beingAtRandom();
-    // Change title
-    title.innerHTML = setting.toUpperCase() + roomNum;
 
-    // Body Paragraph
-    let text = document.createElement('P');
-    text.innerHTML = 
-    'You enter the '
-    + roomStartAtRandom()
-    + setting
-    + ' and '
-    + roomSecondAtRandom()
-    + ' Across from you is a '
-    + entity
-    + activityAtRandom()
-    + 'The '
-    + entity
-    + responseAtRandom();
-    gameArea.appendChild(text);
+    // Change title
+    newSetting();
+    title.innerHTML = roomType.toUpperCase();
+
+    // Body paragraph
+    bodyParagraphA();
 
     // Call to action
     let callToAction = document.createElement('H2');
@@ -363,6 +398,16 @@ beingAtRandom = () => {
     return being;
 }
 
+positionAtRandom = () => {
+    let length = storyElem.elements.roomPosition.length
+    return storyElem.elements.roomPosition[diceRoll(length)]
+}
+
+enterAtRandom = () => {
+    let length = storyElem.elements.roomEnter.length
+    return storyElem.elements.roomEnter[diceRoll(length)]
+}
+
 roomStartAtRandom = () => {
     let length = storyElem.elements.roomStart.length
     return storyElem.elements.roomStart[diceRoll(length)]
@@ -422,9 +467,11 @@ lastRoom = () => {
 }
 
 youWin = () => {
+    updateMeters();
     // Change title
     title.innerHTML = 'You Win!';
     printStory();
+    goBackButton();
 }
 
 deathMethod = (chose) => {
@@ -457,11 +504,7 @@ gameOver = (chose) => {
 
     deathMethod(chose);
     printStory();
-    // Go back
-    let back = document.createElement('BUTTON');
-    back.innerHTML = 'Go Back Now';
-    back.addEventListener('click', resetGame);
-    gameArea.appendChild(back);
+    goBackButton();
 }
 
 printStory = () => {
